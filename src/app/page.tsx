@@ -1,3 +1,4 @@
+import AlertRules from "./alert-rules";
 import ConnectWalletButton from "./connect-wallet-button";
 import TelegramLink from "./telegram-link";
 
@@ -37,9 +38,11 @@ export default function Home() {
         </div>
 
         <p className="mt-6 text-xs text-zinc-500 dark:text-zinc-500">
-          Connect a wallet on Arc testnet, then link your Telegram. Rule picker
-          lands next.
+          Connect a wallet on Arc testnet, link your Telegram, then pick your
+          alerts below.
         </p>
+
+        <AlertRules />
       </section>
 
       <section className="px-6 py-16 border-t border-zinc-200 dark:border-zinc-900">
