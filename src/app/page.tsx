@@ -1,4 +1,5 @@
 import ConnectWalletButton from "./connect-wallet-button";
+import TelegramLink from "./telegram-link";
 
 export default function Home() {
   return (
@@ -32,17 +33,12 @@ export default function Home() {
 
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
           <ConnectWalletButton />
-          <button
-            type="button"
-            disabled
-            className="h-12 px-6 rounded-full border border-zinc-200 dark:border-zinc-800 font-medium text-sm tracking-tight disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Link Telegram
-          </button>
+          <TelegramLink />
         </div>
 
         <p className="mt-6 text-xs text-zinc-500 dark:text-zinc-500">
-          Connect a wallet on Arc testnet to begin. Telegram linking lands next.
+          Connect a wallet on Arc testnet, then link your Telegram. Rule picker
+          lands next.
         </p>
       </section>
 
