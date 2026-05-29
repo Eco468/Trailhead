@@ -1,4 +1,4 @@
-# PingChain
+# Trailhead
 
 **Onchain alerts that actually work.** Get a Telegram ping the moment something happens on your wallet — incoming USDC, new token approvals, large outgoing transfers.
 
