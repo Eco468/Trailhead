@@ -172,7 +172,7 @@ async function scanNativeTransfers(fromBlock, toBlock, watchlist) {
             walletId: w.walletId,
           });
           if (fired) {
-            const amount = formatUnits(tx.value, 6);
+            const amount = formatUnits(tx.value, 18);
             await fire(
               w.chatId,
               `<b>+ ${amount} USDC</b>\nIncoming to ${shortAddr(getAddress(to))}\nFrom ${shortAddr(getAddress(from))}\n<a href="${txLink(tx.hash)}">View on ArcScan</a>`,
@@ -192,8 +192,8 @@ async function scanNativeTransfers(fromBlock, toBlock, watchlist) {
             walletId: w.walletId,
           });
           if (fired) {
-            const amount = formatUnits(tx.value, 6);
-            const threshold = formatUnits(rule.threshold, 6);
+            const amount = formatUnits(tx.value, 18);
+            const threshold = formatUnits(rule.threshold, 18);
             await fire(
               w.chatId,
               `<b>− ${amount} USDC</b>\nOutgoing from ${shortAddr(getAddress(from))} (above ${threshold} threshold)\nTo ${to ? shortAddr(getAddress(to)) : "contract"}\n<a href="${txLink(tx.hash)}">View on ArcScan</a>`,
