@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "bot": "node --use-system-ca --env-file=.env.local scripts/bot.mjs",
-    "indexer": "node --use-system-ca --env-file=.env.local scripts/indexer.mjs"
+    "bot:prod": "node scripts/bot.mjs",
+    "indexer": "node --use-system-ca --env-file=.env.local scripts/indexer.mjs",
+    "indexer:prod": "node scripts/indexer.mjs"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
