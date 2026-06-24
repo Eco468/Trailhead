@@ -5,6 +5,7 @@ import { verifyMessage } from "viem";
 
 const ADDR = /^0x[a-fA-F0-9]{40}$/;
 const CODE_TTL_MIN = 10;
+const RATE_LIMIT_PER_HOUR = 10;
 
 export async function POST(req: NextRequest) {
   let body: { wallet_address?: string; message?: string; signature?: string };
@@ -52,6 +53,27 @@ export async function POST(req: NextRequest) {
   let userId: string;
   if (existingWallet.data) {
     userId = existingWallet.data.user_id;
+
+    // Rate limit: count codes created in the last hour for this user.
+    // expires_at is set to created_at + CODE_TTL_MIN, so expires_at > now() - 50min
+    // means created in the last hour.
+    const windowStart = new Date(
+      Date.now() - (60 - CODE_TTL_MIN) * 60_000,
+    ).toISOString();
+    const recent = await supabaseAdmin
+      .from("telegram_link_codes")
+      .select("code", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gt("expires_at", windowStart);
+    if (recent.error) {
+      return Response.json({ error: recent.error.message }, { status: 500 });
+    }
+    if ((recent.count ?? 0) >= RATE_LIMIT_PER_HOUR) {
+      return Response.json(
+        { error: "too many link attempts — try again later" },
+        { status: 429 },
+      );
+    }
   } else {
     const newUser = await supabaseAdmin
       .from("users")
