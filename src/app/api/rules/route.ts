@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { verifyMessage } from "viem";
 
 const ADDR = /^0x[a-fA-F0-9]{40}$/;
 const RULE_TYPES = ["incoming_usdc", "new_approval", "outgoing_above"] as const;
@@ -61,6 +62,8 @@ export async function PUT(req: NextRequest) {
     rule_type?: string;
     enabled?: boolean;
     threshold_usdc?: number | null;
+    message?: string;
+    signature?: string;
   };
   try {
     body = await req.json();
@@ -80,6 +83,23 @@ export async function PUT(req: NextRequest) {
   }
   const rule_type = body.rule_type as RuleType;
   const address = raw.toLowerCase();
+
+  const { message, signature } = body;
+  if (!message || !signature) {
+    return Response.json({ error: "message and signature required" }, { status: 400 });
+  }
+  try {
+    const valid = await verifyMessage({
+      address: address as `0x${string}`,
+      message,
+      signature: signature as `0x${string}`,
+    });
+    if (!valid) {
+      return Response.json({ error: "invalid signature" }, { status: 401 });
+    }
+  } catch {
+    return Response.json({ error: "signature verification failed" }, { status: 401 });
+  }
 
   let threshold: number | null = null;
   if (rule_type === "outgoing_above") {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useSignMessage } from "wagmi";
 
 type RuleType = "incoming_usdc" | "new_approval" | "outgoing_above";
 
@@ -30,6 +30,7 @@ const RULE_META: { type: RuleType; title: string; desc: string }[] = [
 
 export default function AlertRules() {
   const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const [rules, setRules] = useState<RulesMap | null>(null);
   const [known, setKnown] = useState(false);
   const [saving, setSaving] = useState<RuleType | null>(null);
@@ -68,15 +69,24 @@ export default function AlertRules() {
       const prevSnapshot = rules;
       setRules((prev) => (prev ? { ...prev, [type]: next } : prev));
       try {
+        const message = `Update Trailhead rule ${type} on ${address} to enabled=${next.enabled}${
+          type === "outgoing_above" ? ` threshold=${next.threshold_usdc ?? ""}` : ""
+        }\nTimestamp: ${Date.now()}`;
+        const signature = await signMessageAsync({ message });
+
         const payload: {
           wallet_address: string;
           rule_type: RuleType;
           enabled: boolean;
           threshold_usdc?: number | null;
+          message: string;
+          signature: string;
         } = {
           wallet_address: address,
           rule_type: type,
           enabled: next.enabled,
+          message,
+          signature,
         };
         if (type === "outgoing_above") {
           payload.threshold_usdc = next.threshold_usdc;
@@ -100,7 +110,7 @@ export default function AlertRules() {
         setSaving(null);
       }
     },
-    [address, rules],
+    [address, rules, signMessageAsync],
   );
 
   if (!isConnected || !address || !rules) return null;
