@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
 import { randomBytes } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { verifyMessage } from "viem";
 
 const ADDR = /^0x[a-fA-F0-9]{40}$/;
 const CODE_TTL_MIN = 10;
 
 export async function POST(req: NextRequest) {
-  let body: { wallet_address?: string };
+  let body: { wallet_address?: string; message?: string; signature?: string };
   try {
     body = await req.json();
   } catch {
@@ -18,6 +19,25 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "invalid wallet_address" }, { status: 400 });
   }
   const address = raw.toLowerCase();
+
+  // Verify signature
+  const { message, signature } = body;
+  if (!message || !signature) {
+    return Response.json({ error: "message and signature required" }, { status: 400 });
+  }
+
+  try {
+    const valid = await verifyMessage({
+      address: address as `0x${string}`,
+      message,
+      signature: signature as `0x${string}`,
+    });
+    if (!valid) {
+      return Response.json({ error: "invalid signature" }, { status: 401 });
+    }
+  } catch {
+    return Response.json({ error: "signature verification failed" }, { status: 401 });
+  }
 
   const existingWallet = await supabaseAdmin
     .from("wallets")
@@ -62,5 +82,5 @@ export async function POST(req: NextRequest) {
   }
 
   const bot = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "TrailheadAlertsBot";
-  return Response.json({ url: `https://t.me/${bot}?start=${code}` });
+  return Response.json({ url: `https://t.me/${bot}?start=${code}`, code, bot });
 }
